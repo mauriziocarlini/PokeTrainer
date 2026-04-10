@@ -13,6 +13,7 @@ const FORMAT_CONFIGS = {
       species: 0x08,
       exp: 0x10,
       ability: 0x14,
+      abilityNumber: 0x15,
       nature: 0x1c,
       statNature: null,
       formPacked: 0x1d,
@@ -26,6 +27,8 @@ const FORMAT_CONFIGS = {
       move2: 0x5c,
       move3: 0x5e,
       move4: 0x60,
+      move1Pp: 0x62,
+      move1PpUps: 0x66,
       nicknameTerminator: 0x58,
       otTerminator: 0xc8,
       statLevel: 0xec,
@@ -45,6 +48,7 @@ const FORMAT_CONFIGS = {
       species: 0x08,
       exp: 0x10,
       ability: 0x14,
+      abilityNumber: 0x16,
       nature: 0x20,
       statNature: 0x21,
       form: 0x24,
@@ -58,6 +62,8 @@ const FORMAT_CONFIGS = {
       move2: 0x74,
       move3: 0x76,
       move4: 0x78,
+      move1Pp: 0x7a,
+      move1PpUps: 0x7e,
       nicknameTerminator: 0x70,
       otTerminator: 0x110,
       statLevel: 0x148,
@@ -77,6 +83,7 @@ const FORMAT_CONFIGS = {
       species: 0x08,
       exp: 0x10,
       ability: 0x14,
+      abilityNumber: 0x16,
       nature: 0x20,
       statNature: 0x21,
       form: 0x24,
@@ -90,6 +97,8 @@ const FORMAT_CONFIGS = {
       move2: 0x56,
       move3: 0x58,
       move4: 0x5a,
+      move1Pp: 0x5c,
+      move1PpUps: 0x86,
       nicknameTerminator: 0x78,
       otTerminator: 0x128,
       statLevel: 0x168,
@@ -109,6 +118,7 @@ const FORMAT_CONFIGS = {
       species: 0x08,
       exp: 0x10,
       ability: 0x14,
+      abilityNumber: 0x16,
       nature: 0x20,
       statNature: 0x21,
       form: 0x24,
@@ -122,6 +132,8 @@ const FORMAT_CONFIGS = {
       move2: 0x74,
       move3: 0x76,
       move4: 0x78,
+      move1Pp: 0x7a,
+      move1PpUps: 0x7e,
       nicknameTerminator: 0x70,
       otTerminator: 0x110,
       statLevel: 0x148,
@@ -141,6 +153,7 @@ const FORMAT_CONFIGS = {
       species: 0x08,
       exp: 0x10,
       ability: 0x14,
+      abilityNumber: 0x16,
       nature: 0x20,
       statNature: 0x21,
       form: 0x24,
@@ -154,6 +167,8 @@ const FORMAT_CONFIGS = {
       move2: 0x74,
       move3: 0x76,
       move4: 0x78,
+      move1Pp: 0x7a,
+      move1PpUps: 0x7e,
       nicknameTerminator: 0x70,
       otTerminator: 0x110,
       statLevel: 0x148,
@@ -175,6 +190,7 @@ const EXPERIENCE_MIN_LEVEL = 1;
 const EXPERIENCE_MAX_LEVEL = 100;
 const MAX_STAT_POINTS = 32;
 const MAX_TOTAL_STAT_POINTS = 66;
+const MAX_TOTAL_LEGACY_EV = 510;
 const POINT_TO_EV = [0, 4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124, 132, 140, 148, 156, 164, 172, 180, 188, 196, 204, 212, 220, 228, 236, 244, 252];
 
 const FIRST_UNALIGNED_INTERNAL_9 = 917;
@@ -211,12 +227,15 @@ const appState = {
   moveLegality: null,
   abilityLegality: null,
   growthRates: null,
+  movePp: null,
   speciesMap: new Map(),
   movesMap: new Map(),
   abilitiesMap: new Map(),
   moveQueryMap: new Map(),
   abilityQueryMap: new Map(),
   loadedFile: null,
+  serviceWorkerRegistration: null,
+  pendingUpdateWorker: null,
 };
 
 const ui = {
@@ -252,6 +271,9 @@ const ui = {
     document.querySelector('[data-move-input="4"]'),
   ],
   saveButton: document.querySelector("#save-button"),
+  updatePrompt: document.querySelector("#update-prompt"),
+  updateButton: document.querySelector("#update-button"),
+  checkUpdateButton: document.querySelector("#check-update-button"),
 };
 
 bootstrap().catch((error) => {
@@ -267,13 +289,14 @@ async function bootstrap() {
 }
 
 async function loadDatasets() {
-  const [species, moves, abilities, moveLegality, abilityLegality, growthRates] = await Promise.all([
+  const [species, moves, abilities, moveLegality, abilityLegality, growthRates, movePp] = await Promise.all([
     fetch("./assets/data/species.json").then((res) => res.json()),
     fetch("./assets/data/moves.json").then((res) => res.json()),
     fetch("./assets/data/abilities.json").then((res) => res.json()),
     fetch("./assets/data/move-legality-pkhex.json").then((res) => res.json()),
     fetch("./assets/data/ability-legality-pkhex.json").then((res) => res.json()),
     fetch("./assets/data/growth-rates-pkhex.json").then((res) => res.json()),
+    fetch("./assets/data/move-pp-pkhex.json").then((res) => res.json()),
   ]);
 
   appState.species = species;
@@ -282,6 +305,7 @@ async function loadDatasets() {
   appState.moveLegality = moveLegality;
   appState.abilityLegality = abilityLegality;
   appState.growthRates = growthRates;
+  appState.movePp = movePp;
   appState.speciesMap = new Map(species.map((entry) => [entry.id, entry]));
   appState.movesMap = new Map(appState.moves.map((entry) => [entry.id, entry]));
   appState.abilitiesMap = new Map(abilities.map((entry) => [entry.id, entry]));
@@ -328,6 +352,7 @@ function wireEvents() {
     event.preventDefault();
     exportEditedFile();
   });
+  ui.checkUpdateButton?.addEventListener("click", checkForPwaUpdate);
 }
 
 async function handleFile(file) {
@@ -394,6 +419,7 @@ function parsePokemon(bytes, format) {
     exp,
     level: getLevelFromData(bytes, format, exp, growthRate),
     abilityId: readAbility(bytes, format),
+    abilityNumber: bytes[format.offsets.abilityNumber] & 7,
     natureId: readNature(bytes, format),
     evs: {
       hp: bytes[format.offsets.evHp],
@@ -443,8 +469,9 @@ function fillForm(fileState) {
 
 function updateEvBadge() {
   const total = getEvTotal();
-  ui.evTotal.textContent = `${total} / ${MAX_TOTAL_STAT_POINTS} SP`;
-  ui.evTotal.classList.toggle("error", total > MAX_TOTAL_STAT_POINTS);
+  const legacyTotal = getLegacyEvTotal();
+  ui.evTotal.textContent = `${total} / ${MAX_TOTAL_STAT_POINTS} SP • ${legacyTotal} / ${MAX_TOTAL_LEGACY_EV} EV`;
+  ui.evTotal.classList.toggle("error", legacyTotal > MAX_TOTAL_LEGACY_EV);
   Object.entries(ui.evInputs).forEach(([key, input]) => {
     ui.evValueLabels[key].textContent = String(clampPointsValue(input.value));
   });
@@ -458,6 +485,7 @@ function isFormValid() {
   if (!appState.loadedFile) return false;
   const total = getEvTotal();
   if (total > MAX_TOTAL_STAT_POINTS) return false;
+  if (getLegacyEvTotal() > MAX_TOTAL_LEGACY_EV) return false;
 
   const evValues = Object.values(ui.evInputs).map((input) => Number.parseInt(input.value || "0", 10));
   if (evValues.some((value) => Number.isNaN(value) || value < 0 || value > MAX_STAT_POINTS)) return false;
@@ -503,7 +531,12 @@ function exportEditedFile() {
 
   writeAbility(output, format, resolveAbilityValue());
   ui.moveInputs.forEach((input, index) => {
-    writeU16(output, format.offsets.move1 + index * 2, resolveMoveValue(input.value));
+    const moveId = resolveMoveValue(input.value);
+    const originalMoveId = appState.loadedFile.parsed.moves[index];
+    writeU16(output, format.offsets.move1 + index * 2, moveId);
+    if (moveId !== originalMoveId) {
+      writeMovePpState(output, format, index, moveId, 0);
+    }
   });
 
   refreshChecksum(output, format);
@@ -552,25 +585,29 @@ function getEvTotal() {
   return Object.values(ui.evInputs).reduce((sum, input) => sum + clampPointsValue(input.value), 0);
 }
 
+function getLegacyEvTotal() {
+  return Object.values(ui.evInputs).reduce((sum, input) => sum + legacyEvFromPoints(input.value), 0);
+}
+
 function syncSpSliders(changedKey = "") {
   if (changedKey) {
     const input = ui.evInputs[changedKey];
-    const otherTotal = Object.entries(ui.evInputs).reduce((sum, [key, current]) => {
+    const otherLegacyTotal = Object.entries(ui.evInputs).reduce((sum, [key, current]) => {
       if (key === changedKey) return sum;
-      return sum + clampPointsValue(current.value);
+      return sum + legacyEvFromPoints(current.value);
     }, 0);
-    const maxForChanged = Math.max(0, Math.min(MAX_STAT_POINTS, MAX_TOTAL_STAT_POINTS - otherTotal));
+    const maxForChanged = getMaxPointsForRemainingLegacyEv(MAX_TOTAL_LEGACY_EV - otherLegacyTotal);
     if (clampPointsValue(input.value) > maxForChanged) {
       input.value = String(maxForChanged);
     }
   }
 
   Object.entries(ui.evInputs).forEach(([key, input]) => {
-    const otherTotal = Object.entries(ui.evInputs).reduce((sum, [otherKey, current]) => {
+    const otherLegacyTotal = Object.entries(ui.evInputs).reduce((sum, [otherKey, current]) => {
       if (otherKey === key) return sum;
-      return sum + clampPointsValue(current.value);
+      return sum + legacyEvFromPoints(current.value);
     }, 0);
-    const maxForStat = Math.max(0, Math.min(MAX_STAT_POINTS, MAX_TOTAL_STAT_POINTS - otherTotal));
+    const maxForStat = getMaxPointsForRemainingLegacyEv(MAX_TOTAL_LEGACY_EV - otherLegacyTotal);
     if (clampPointsValue(input.value) > maxForStat) {
       input.value = String(maxForStat);
     }
@@ -664,11 +701,12 @@ function getConservativeMoveEntries() {
 function getLegalAbilityIds() {
   if (!appState.loadedFile || !appState.abilityLegality) return null;
   const { format, parsed } = appState.loadedFile;
-  return (
+  const entry = (
     appState.abilityLegality[format.key]?.[`${parsed.speciesId}:${parsed.form}`] ??
     appState.abilityLegality[format.key]?.[`${parsed.speciesId}:0`] ??
     null
   );
+  return entry ? getUniqueAbilities(entry.slots) : null;
 }
 
 function normalizeQuery(value) {
@@ -774,11 +812,14 @@ function readAbility(bytes, format) {
 }
 
 function writeAbility(bytes, format, abilityId) {
+  const abilityNumber = getSelectedAbilityNumber(abilityId);
   if (format.key === "pb7") {
     bytes[format.offsets.ability] = abilityId & 0xff;
+    bytes[format.offsets.abilityNumber] = (bytes[format.offsets.abilityNumber] & ~7) | (abilityNumber & 7);
     return;
   }
   writeU16(bytes, format.offsets.ability, abilityId);
+  bytes[format.offsets.abilityNumber] = (bytes[format.offsets.abilityNumber] & ~7) | (abilityNumber & 7);
 }
 
 function getDesiredLevel() {
@@ -821,6 +862,58 @@ function getGrowthRate(formatKey, speciesId, form) {
     appState.growthRates?.[formatKey]?.[`${speciesId}:0`] ??
     null
   );
+}
+
+function getSelectedAbilityNumber(abilityId) {
+  const entry = getAbilityEntryForCurrentPokemon();
+  if (!entry?.slots?.length) return 1;
+  const currentAbilityId = appState.loadedFile?.parsed.abilityId;
+  const currentAbilityNumber = appState.loadedFile?.parsed.abilityNumber ?? 1;
+  if (abilityId === currentAbilityId && entry.slots.some((slot) => slot && slot === abilityId)) {
+    return currentAbilityNumber;
+  }
+  const slotIndex = entry.slots.findIndex((slot) => slot === abilityId);
+  if (slotIndex === -1) return 1;
+  return 1 << slotIndex;
+}
+
+function getAbilityEntryForCurrentPokemon() {
+  if (!appState.loadedFile || !appState.abilityLegality) return null;
+  const { format, parsed } = appState.loadedFile;
+  return (
+    appState.abilityLegality[format.key]?.[`${parsed.speciesId}:${parsed.form}`] ??
+    appState.abilityLegality[format.key]?.[`${parsed.speciesId}:0`] ??
+    null
+  );
+}
+
+function getUniqueAbilities(slots = []) {
+  return slots.filter((value, index) => value && slots.indexOf(value) === index);
+}
+
+function getMaxPointsForRemainingLegacyEv(remainingEv) {
+  for (let points = MAX_STAT_POINTS; points >= 0; points -= 1) {
+    if (POINT_TO_EV[points] <= remainingEv) return points;
+  }
+  return 0;
+}
+
+function writeMovePpState(bytes, format, moveIndex, moveId, ppUps = 0) {
+  const ppOffset = format.offsets.move1Pp + moveIndex;
+  const ppUpsOffset = format.offsets.move1PpUps + moveIndex;
+  if (!moveId) {
+    bytes[ppOffset] = 0;
+    bytes[ppUpsOffset] = 0;
+    return;
+  }
+  bytes[ppUpsOffset] = ppUps;
+  bytes[ppOffset] = getMovePpForFormat(format.key, moveId, ppUps);
+}
+
+function getMovePpForFormat(formatKey, moveId, ppUps = 0) {
+  const table = appState.movePp?.[formatKey];
+  const base = table?.[moveId] ?? appState.movePp?.pk9?.[moveId] ?? 0;
+  return Math.floor((base * (5 + ppUps)) / 5);
 }
 
 function getLevelFromExp(exp, growthRate) {
@@ -1031,8 +1124,95 @@ function writeU32(bytes, offset, value) {
 async function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
   try {
-    await navigator.serviceWorker.register("./sw.js");
+    const registration = await navigator.serviceWorker.register("./sw.js");
+    appState.serviceWorkerRegistration = registration;
+    setupPwaUpdatePrompt(registration);
+    registration.update().catch(() => {});
   } catch (error) {
     console.warn("Service worker registration failed", error);
   }
+}
+
+async function checkForPwaUpdate() {
+  const registration = appState.serviceWorkerRegistration;
+  if (!registration) {
+    showUpdateCheckResult("Updates unavailable");
+    return;
+  }
+
+  ui.checkUpdateButton.disabled = true;
+  try {
+    if (registration.waiting) {
+      showUpdatePrompt(registration.waiting);
+      return;
+    }
+
+    await registration.update();
+    await new Promise((resolve) => window.setTimeout(resolve, 700));
+    const waitingWorker = appState.pendingUpdateWorker || registration.waiting;
+    if (waitingWorker) {
+      showUpdatePrompt(waitingWorker);
+    } else {
+      showUpdateCheckResult("Up to date");
+    }
+  } catch (error) {
+    console.warn("Update check failed", error);
+    showUpdateCheckResult("Update check failed");
+  } finally {
+    ui.checkUpdateButton.disabled = false;
+  }
+}
+
+function setupPwaUpdatePrompt(registration) {
+  let refreshing = false;
+  let waitingWorker = registration.waiting;
+
+  if (waitingWorker && navigator.serviceWorker.controller) {
+    appState.pendingUpdateWorker = waitingWorker;
+    showUpdatePrompt(waitingWorker);
+  }
+
+  registration.addEventListener("updatefound", () => {
+    const installingWorker = registration.installing;
+    if (!installingWorker) return;
+    installingWorker.addEventListener("statechange", () => {
+      if (installingWorker.state !== "installed" || !navigator.serviceWorker.controller) return;
+      waitingWorker = installingWorker;
+      appState.pendingUpdateWorker = waitingWorker;
+      showUpdatePrompt(waitingWorker);
+    });
+  });
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+}
+
+function showUpdatePrompt(worker) {
+  if (!ui.updatePrompt || !ui.updateButton) return;
+  appState.pendingUpdateWorker = worker;
+  ui.updatePrompt.querySelector("span").textContent = "Update available";
+  ui.updatePrompt.classList.remove("passive");
+  ui.updatePrompt.classList.remove("hidden");
+  ui.updateButton.disabled = false;
+  ui.updateButton.textContent = "Update";
+  ui.updateButton.onclick = () => {
+    ui.updateButton.disabled = true;
+    ui.updateButton.textContent = "Updating";
+    worker.postMessage({ type: "SKIP_WAITING" });
+  };
+}
+
+function showUpdateCheckResult(message) {
+  if (!ui.updatePrompt) return;
+  ui.updatePrompt.querySelector("span").textContent = message;
+  ui.updatePrompt.classList.add("passive");
+  ui.updatePrompt.classList.remove("hidden");
+  window.setTimeout(() => {
+    if (!appState.pendingUpdateWorker) {
+      ui.updatePrompt.classList.add("hidden");
+    }
+  }, 1800);
 }

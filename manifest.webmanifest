@@ -1,7 +1,7 @@
 {
   "name": "Bill's secret PC",
   "short_name": "Bill's PC",
-  "description": "Load a pkmn file, train it, profit.",
+  "description": "Minimal Pokemon file editor.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#111215",

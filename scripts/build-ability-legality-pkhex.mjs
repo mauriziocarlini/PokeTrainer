@@ -62,17 +62,15 @@ function readPersonalInfo(entry, format) {
 }
 
 function readAbilities(entry, format) {
-  const abilities = [];
-  for (const offset of format.abilityOffsets) {
+  return format.abilityOffsets.map((offset) => {
     const value = format.abilityWidth === 1 ? entry[offset] : readU16(entry, offset);
-    if (value && !abilities.includes(value)) abilities.push(value);
-  }
-  return abilities;
+    return value || 0;
+  });
 }
 
 function addEntry(result, species, form, abilities) {
-  if (!abilities.length) return;
-  result[`${species}:${form}`] = abilities;
+  if (!abilities.some(Boolean)) return;
+  result[`${species}:${form}`] = { slots: abilities };
 }
 
 function arraysEqual(left, right) {
