@@ -1,0 +1,24 @@
+{
+  "name": "PyKHeX PWA",
+  "short_name": "PyKHeX",
+  "description": "Minimal PWA editor for PB7, PK8, PA8, PK9 and PA9 Pokemon files.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#08111f",
+  "theme_color": "#0f172a",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "./assets/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/icon-mask.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
