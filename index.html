@@ -14,17 +14,7 @@
   <body>
     <main class="app-shell">
       <section class="hero card">
-        <div class="title-row">
-          <h1>Bill's secret PC</h1>
-          <button id="check-update-button" class="icon-button" type="button" aria-label="Check for updates">
-            <svg aria-hidden="true" viewBox="0 0 24 24">
-              <path d="M20 6v5h-5"/>
-              <path d="M4 18v-5h5"/>
-              <path d="M18.2 9A7 7 0 0 0 6.3 6.8L4 9"/>
-              <path d="M5.8 15a7 7 0 0 0 11.9 2.2L20 15"/>
-            </svg>
-          </button>
-        </div>
+        <h1>Bill's secret PC</h1>
         <label class="upload-zone" for="file-input">
           <input id="file-input" type="file" accept=".pb7,.pk8,.pa8,.pk9,.pa9" />
           <span class="upload-title">Tap to load a Pokemon file</span>
@@ -133,11 +123,16 @@
           <button id="save-button" type="submit">Save &amp; Export</button>
         </div>
       </form>
+      <button id="check-update-button" class="update-link" type="button">
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M20 6v5h-5"/>
+          <path d="M4 18v-5h5"/>
+          <path d="M18.2 9A7 7 0 0 0 6.3 6.8L4 9"/>
+          <path d="M5.8 15a7 7 0 0 0 11.9 2.2L20 15"/>
+        </svg>
+        <span>Check for updates</span>
+      </button>
     </main>
-    <div id="update-prompt" class="update-prompt hidden" role="status" aria-live="polite">
-      <span>Update available</span>
-      <button id="update-button" type="button">Update</button>
-    </div>
     <script type="module" src="./app.js"></script>
   </body>
 </html>

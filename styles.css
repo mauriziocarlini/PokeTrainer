@@ -59,40 +59,6 @@ body {
   padding-top: 22px;
 }
 
-.title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.icon-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  flex: 0 0 auto;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #171a20;
-  color: var(--muted-strong);
-}
-
-.icon-button svg {
-  width: 21px;
-  height: 21px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.icon-button:disabled {
-  opacity: 0.55;
-}
-
 .eyebrow {
   margin: 0 0 6px;
   font-size: 0.72rem;
@@ -375,40 +341,6 @@ button:focus {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.update-prompt {
-  position: fixed;
-  top: calc(12px + env(safe-area-inset-top));
-  left: 16px;
-  right: 16px;
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: min(calc(100% - 32px), 820px);
-  margin: 0 auto;
-  padding: 10px 10px 10px 14px;
-  border: 1px solid var(--line-strong);
-  border-radius: 16px;
-  background: #171a20;
-  color: var(--muted-strong);
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.update-prompt.passive button {
-  display: none;
-}
-
-.update-prompt button {
-  border: 0;
-  border-radius: 12px;
-  padding: 9px 12px;
-  color: #18120a;
-  background: #dcbc67;
-  font-weight: 800;
-}
-
 #save-button {
   width: min(100%, 820px);
   display: block;
@@ -421,6 +353,37 @@ button:focus {
   color: #18120a;
   background: #dcbc67;
   box-shadow: none;
+}
+
+.update-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 16px 2px 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.update-link svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.update-link.available {
+  color: var(--brand);
+}
+
+.update-link:disabled {
+  opacity: 0.7;
 }
 
 #save-button:disabled {
