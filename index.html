@@ -95,7 +95,7 @@
             </label>
             <label>
               <span>Ability</span>
-              <input id="ability-input" list="ability-options" autocomplete="off" placeholder="Ex. Protosynthesis (#281)" />
+              <select id="ability-input"></select>
             </label>
           </div>
         </section>
@@ -111,19 +111,19 @@
           <div class="field-stack">
             <label>
               <span>Move 1</span>
-              <input data-move-input="1" list="move-options" autocomplete="off" placeholder="Ex. Thunderbolt (#85)" />
+              <select data-move-input="1"></select>
             </label>
             <label>
               <span>Move 2</span>
-              <input data-move-input="2" list="move-options" autocomplete="off" placeholder="Ex. Protect (#182)" />
+              <select data-move-input="2"></select>
             </label>
             <label>
               <span>Move 3</span>
-              <input data-move-input="3" list="move-options" autocomplete="off" placeholder="Leave empty for no move" />
+              <select data-move-input="3"></select>
             </label>
             <label>
               <span>Move 4</span>
-              <input data-move-input="4" list="move-options" autocomplete="off" placeholder="Leave empty for no move" />
+              <select data-move-input="4"></select>
             </label>
           </div>
         </section>
@@ -141,10 +141,6 @@
         </div>
       </form>
     </main>
-
-    <datalist id="ability-options"></datalist>
-    <datalist id="move-options"></datalist>
-
     <script type="module" src="./app.js"></script>
   </body>
 </html>

@@ -237,8 +237,6 @@ const ui = {
     document.querySelector('[data-move-input="3"]'),
     document.querySelector('[data-move-input="4"]'),
   ],
-  abilityOptions: document.querySelector("#ability-options"),
-  moveOptions: document.querySelector("#move-options"),
   saveButton: document.querySelector("#save-button"),
 };
 
@@ -285,13 +283,8 @@ function buildStaticUI() {
     ui.natureSelect.append(option);
   });
 
-  ui.abilityOptions.innerHTML = appState.abilities
-    .map((entry) => `<option value="${formatOptionLabel(entry)}"></option>`)
-    .join("");
-
-  ui.moveOptions.innerHTML = appState.moves
-    .map((entry) => `<option value="${formatOptionLabel(entry)}"></option>`)
-    .join("");
+  renderAbilityOptions();
+  renderMoveOptions(appState.moves);
 }
 
 function wireEvents() {
@@ -308,10 +301,10 @@ function wireEvents() {
     });
   });
 
-  ui.abilityInput.addEventListener("input", refreshSaveState);
+  ui.abilityInput.addEventListener("change", refreshSaveState);
   ui.natureSelect.addEventListener("change", refreshSaveState);
   ui.levelInput.addEventListener("input", refreshSaveState);
-  ui.moveInputs.forEach((input) => input.addEventListener("input", () => {
+  ui.moveInputs.forEach((input) => input.addEventListener("change", () => {
     syncLevelInputToRequiredMoves();
     refreshSaveState();
   }));
@@ -410,18 +403,17 @@ function fillForm(fileState) {
 
   ui.levelInput.value = String(parsed.level ?? EXPERIENCE_MIN_LEVEL);
   ui.natureSelect.value = String(parsed.natureId);
-  ui.abilityInput.value = formatOptionLabel(
-    appState.abilitiesMap.get(parsed.abilityId) || { id: parsed.abilityId, name: `Unknown Ability ${parsed.abilityId}` },
-  );
+  renderAbilityOptions(parsed.abilityId);
+  ui.abilityInput.value = String(parsed.abilityId);
 
+  updateMoveOptions();
   ui.moveInputs.forEach((input, index) => {
     const moveId = parsed.moves[index];
-    const entry = appState.movesMap.get(moveId) || { id: moveId, name: moveId === 0 ? "(None)" : `Unknown Move ${moveId}` };
-    input.value = moveId === 0 ? "" : formatOptionLabel(entry);
+    ensureMoveOptionExists(moveId);
+    input.value = String(moveId);
   });
 
   syncLevelInputToRequiredMoves();
-  updateMoveOptions();
   updateEvBadge();
   refreshSaveState();
 
@@ -452,7 +444,7 @@ function isFormValid() {
   if (evValues.some((value) => Number.isNaN(value) || value < 0 || value > 252)) return false;
   const level = getDesiredLevel();
   if (level == null || level < EXPERIENCE_MIN_LEVEL || level > EXPERIENCE_MAX_LEVEL) return false;
-  if (resolveEntryId(ui.abilityInput.value, appState.abilityQueryMap) == null) return false;
+  if (resolveAbilityValue() == null) return false;
 
   for (const input of ui.moveInputs) {
     const moveId = resolveMoveValue(input.value);
@@ -490,7 +482,7 @@ function exportEditedFile() {
     output[format.offsets.nature] = natureId;
   }
 
-  writeAbility(output, format, resolveEntryId(ui.abilityInput.value, appState.abilityQueryMap));
+  writeAbility(output, format, resolveAbilityValue());
   ui.moveInputs.forEach((input, index) => {
     writeU16(output, format.offsets.move1 + index * 2, resolveMoveValue(input.value));
   });
@@ -516,9 +508,14 @@ function exportEditedFile() {
 
 function updateMoveOptions() {
   const options = getLegalMoveEntries();
-  ui.moveOptions.innerHTML = options
-    .map((entry) => `<option value="${formatOptionLabel(entry)}"></option>`)
-    .join("");
+  const selectedValues = ui.moveInputs.map((input) => input.value);
+  renderMoveOptions(options);
+  ui.moveInputs.forEach((input, index) => {
+    const selected = selectedValues[index];
+    if (selected && Array.from(input.options).some((option) => option.value === selected)) {
+      input.value = selected;
+    }
+  });
 }
 
 function collectEvs() {
@@ -548,7 +545,12 @@ function buildQueryMap(entries) {
 
 function resolveMoveValue(value) {
   if (!value.trim()) return 0;
-  return resolveEntryId(value, appState.moveQueryMap);
+  return Number.parseInt(value, 10);
+}
+
+function resolveAbilityValue() {
+  if (!ui.abilityInput.value.trim()) return null;
+  return Number.parseInt(ui.abilityInput.value, 10);
 }
 
 function getLegalMoveEntries() {
@@ -613,25 +615,45 @@ function getConservativeMoveEntries() {
   return Array.from(entries.values()).sort((a, b) => a.id - b.id);
 }
 
-function resolveEntryId(rawValue, queryMap) {
-  const trimmed = rawValue.trim();
-  if (!trimmed) return null;
-
-  const byLabel = trimmed.match(/\(#(\d+)\)$/);
-  if (byLabel) return Number.parseInt(byLabel[1], 10);
-
-  const byNumber = trimmed.match(/^#?(\d+)$/);
-  if (byNumber) return Number.parseInt(byNumber[1], 10);
-
-  return queryMap.get(normalizeQuery(trimmed)) ?? null;
-}
-
 function normalizeQuery(value) {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
 function formatOptionLabel(entry) {
   return `${entry.name} (#${entry.id})`;
+}
+
+function renderAbilityOptions(selectedAbilityId = 0) {
+  const entries = [...appState.abilities];
+  if (selectedAbilityId && !appState.abilitiesMap.has(selectedAbilityId)) {
+    entries.unshift({ id: selectedAbilityId, name: `Unknown Ability ${selectedAbilityId}` });
+  }
+  ui.abilityInput.innerHTML = entries
+    .map((entry) => `<option value="${entry.id}">${formatOptionLabel(entry)}</option>`)
+    .join("");
+}
+
+function renderMoveOptions(entries) {
+  const rendered = entries
+    .map((entry) => `<option value="${entry.id}">${formatOptionLabel(entry)}</option>`)
+    .join("");
+  ui.moveInputs.forEach((input) => {
+    input.innerHTML = rendered;
+  });
+}
+
+function ensureMoveOptionExists(moveId) {
+  if (!moveId) return;
+  const existsEverywhere = ui.moveInputs.every((input) => Array.from(input.options).some((option) => Number.parseInt(option.value, 10) === moveId));
+  if (existsEverywhere) return;
+  const entry = appState.movesMap.get(moveId) || { id: moveId, name: `Unknown Move ${moveId}` };
+  ui.moveInputs.forEach((input) => {
+    if (Array.from(input.options).some((option) => Number.parseInt(option.value, 10) === moveId)) return;
+    const option = document.createElement("option");
+    option.value = String(entry.id);
+    option.textContent = formatOptionLabel(entry);
+    input.append(option);
+  });
 }
 
 function buildOutputName(fileName) {
