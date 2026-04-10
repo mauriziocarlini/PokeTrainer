@@ -185,6 +185,13 @@ const NATURES = [
 ];
 
 const NATURE_STATS = ["Atk", "Def", "Spe", "SpA", "SpD"];
+const NATURE_UI_ORDER = [
+  0, 1, 2, 3, 4,
+  6, 5, 7, 8, 9,
+  12, 10, 11, 13, 14,
+  18, 15, 16, 17, 19,
+  24, 20, 21, 22, 23,
+];
 
 const EXPERIENCE_MIN_LEVEL = 1;
 const EXPERIENCE_MAX_LEVEL = 100;
@@ -320,7 +327,8 @@ function buildStaticUI() {
   }
 
   ui.natureSelect.innerHTML = "";
-  NATURES.forEach((name, index) => {
+  NATURE_UI_ORDER.forEach((index) => {
+    const name = NATURES[index];
     const option = document.createElement("option");
     option.value = String(index);
     option.textContent = formatNatureLabel(name, index);
