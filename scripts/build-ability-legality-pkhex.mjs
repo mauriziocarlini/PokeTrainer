@@ -12,6 +12,7 @@ const OUTPUT_PATH = path.join(rootDir, "assets", "data", "ability-legality-pkhex
 const FORMAT_CONFIGS = [
   { key: "pb7", personalFile: "personal_gg", personalSize: 0x54, formStatsOffset: 0x1c, formCountOffset: 0x20, abilityOffsets: [0x18, 0x19, 0x1a], abilityWidth: 1 },
   { key: "pk8", personalFile: "personal_swsh", personalSize: 0xb0, formStatsOffset: 0x1e, formCountOffset: 0x20, abilityOffsets: [0x18, 0x1a, 0x1c], abilityWidth: 2 },
+  { key: "pb8", personalFile: "personal_bdsp", personalSize: 0x44, formStatsOffset: 0x1e, formCountOffset: 0x20, abilityOffsets: [0x18, 0x1a, 0x1c], abilityWidth: 2 },
   { key: "pa8", personalFile: "personal_la", personalSize: 0xb0, formStatsOffset: 0x1e, formCountOffset: 0x20, abilityOffsets: [0x18, 0x1a, 0x1c], abilityWidth: 2 },
   { key: "pk9", personalFile: "personal_sv", personalSize: 0x50, formStatsOffset: 0x18, formCountOffset: 0x1a, abilityOffsets: [0x12, 0x14, 0x16], abilityWidth: 2 },
   { key: "pa9", personalFile: "personal_za", personalSize: 0x50, formStatsOffset: 0x18, formCountOffset: 0x1a, abilityOffsets: [0x12, 0x14, 0x16], abilityWidth: 2 },

@@ -12,6 +12,7 @@ const OUTPUT_PATH = path.join(rootDir, "assets", "data", "growth-rates-pkhex.jso
 const FORMAT_CONFIGS = [
   { key: "pb7", personalFile: "personal_gg", personalSize: 0x54, expGrowthOffset: 0x15, formStatsOffset: 0x1c, formCountOffset: 0x20 },
   { key: "pk8", personalFile: "personal_swsh", personalSize: 0xb0, expGrowthOffset: 0x15, formStatsOffset: 0x1e, formCountOffset: 0x20 },
+  { key: "pb8", personalFile: "personal_bdsp", personalSize: 0x44, expGrowthOffset: 0x15, formStatsOffset: 0x1e, formCountOffset: 0x20 },
   { key: "pa8", personalFile: "personal_la", personalSize: 0xb0, expGrowthOffset: 0x15, formStatsOffset: 0x1e, formCountOffset: 0x20 },
   { key: "pk9", personalFile: "personal_sv", personalSize: 0x50, expGrowthOffset: 0x0f, formStatsOffset: 0x18, formCountOffset: 0x1a },
   { key: "pa9", personalFile: "personal_za", personalSize: 0x50, expGrowthOffset: 0x0f, formStatsOffset: 0x18, formCountOffset: 0x1a },

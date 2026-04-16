@@ -14,6 +14,7 @@ const MOVES_PATH = path.join(rootDir, "assets", "data", "moves.json");
 const PKHEX_SOURCES = {
   learnSource7GG: "Legality/LearnSource/Sources/LearnSource7GG.cs",
   personalInfo8SWSH: "PersonalInfo/Info/PersonalInfo8SWSH.cs",
+  personalInfo8BDSP: "PersonalInfo/Info/PersonalInfo8BDSP.cs",
   personalInfo8LA: "PersonalInfo/Info/PersonalInfo8LA.cs",
   personalInfo9SV: "PersonalInfo/Info/PersonalInfo9SV.cs",
   personalInfo9ZA: "PersonalInfo/Info/PersonalInfo9ZA.cs",
@@ -73,6 +74,28 @@ const FORMAT_CONFIGS = [
       addMoves(entries, 800, 1, [moveId("SunsteelStrike")]);
       addMoves(entries, 800, 2, [moveId("MoongeistBeam")]);
       addMoves(entries, 898, 0, [moveId("Agility")]);
+    },
+  },
+  {
+    key: "pb8",
+    personalFile: "personal_bdsp",
+    personalSize: 0x44,
+    levelupFile: "lvlmove_bdsp.pkl",
+    resourceId: "bs",
+    eggFile: "eggmove_bdsp.pkl",
+    formStatsOffset: 0x1e,
+    formCountOffset: 0x20,
+    machineBitsOffset: 0x28,
+    machineMovesSource: { sourceKey: "personalInfo8BDSP", arrayName: "MachineMoves" },
+    extraBitArrays: [
+      { offset: 0x38, arraySource: { sourceKey: "personalInfo8BDSP", arrayName: "TypeTutorMoves" }, byteLength: 1 },
+    ],
+    applyExtras(entries, { moveId }) {
+      addMoves(entries, 479, 1, [moveId("Overheat")]);
+      addMoves(entries, 479, 2, [moveId("HydroPump")]);
+      addMoves(entries, 479, 3, [moveId("Blizzard")]);
+      addMoves(entries, 479, 4, [moveId("AirSlash")]);
+      addMoves(entries, 479, 5, [moveId("LeafStorm")]);
     },
   },
   {

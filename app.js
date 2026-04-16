@@ -71,6 +71,42 @@ const FORMAT_CONFIGS = {
       statLevel: 0x148,
     },
   },
+  pb8: {
+    key: "pb8",
+    fileExtension: ".pb8",
+    game: "BDSP",
+    sizeStored: 0x148,
+    sizeParty: 0x158,
+    blockSize: 0x50,
+    crypto: "g8",
+    speciesMode: "raw",
+    offsets: {
+      checksum: 0x06,
+      species: 0x08,
+      exp: 0x10,
+      ability: 0x14,
+      abilityNumber: 0x16,
+      nature: 0x20,
+      statNature: 0x21,
+      form: 0x24,
+      evHp: 0x26,
+      evAtk: 0x27,
+      evDef: 0x28,
+      evSpe: 0x29,
+      evSpa: 0x2a,
+      evSpd: 0x2b,
+      move1: 0x72,
+      move2: 0x74,
+      move3: 0x76,
+      move4: 0x78,
+      move1Pp: 0x7a,
+      move1PpUps: 0x7e,
+      nicknameTerminator: 0x70,
+      otTerminator: 0x110,
+      metLevel: 0x125,
+      statLevel: 0x148,
+    },
+  },
   pa8: {
     key: "pa8",
     fileExtension: ".pa8",
@@ -209,7 +245,7 @@ const NATURE_UI_ORDER = [
 
 const EXPERIENCE_MIN_LEVEL = 1;
 const EXPERIENCE_MAX_LEVEL = 100;
-const APP_VERSION = "20260414120000";
+const APP_VERSION = "20260416100000";
 const FINAL_STAT_LEVEL = 50;
 const MAX_STAT_POINTS = 32;
 const MAX_TOTAL_STAT_POINTS = 65;
@@ -401,7 +437,7 @@ async function handleFile(file) {
     const bytes = new Uint8Array(await file.arrayBuffer());
     const format = detectFormat(file.name, bytes);
     if (!format) {
-      throw new Error("Unsupported file type. Use PB7, PK8, PA8, PK9 or PA9.");
+      throw new Error("Unsupported file type. Use PB7, PK8, PB8, PA8, PK9 or PA9.");
     }
 
     const encrypted = isEncrypted(bytes, format);

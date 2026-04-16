@@ -12,6 +12,7 @@ const OUTPUT_PATH = path.join(rootDir, "assets", "data", "move-pp-pkhex.json");
 const FORMAT_SOURCES = {
   pb7: "MoveInfo7b.cs",
   pk8: "MoveInfo8.cs",
+  pb8: "MoveInfo8.cs",
   pa8: "MoveInfo8a.cs",
   pk9: "MoveInfo9.cs",
   pa9: "MoveInfo9a.cs",
